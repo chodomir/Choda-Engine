@@ -61,7 +61,6 @@ void Engine::init(bool captureMouse) {
 
 }
 
-
 Engine::~Engine() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
