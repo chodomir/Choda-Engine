@@ -7,7 +7,8 @@ namespace choda {
 	
 	class Sphere {
 	public:
-		Sphere(int stackCount, int sectorCount);
+		Sphere(float radius, int stackCount, int sectorCount);
+		Sphere();
 		~Sphere();
 
 		void init();
@@ -16,6 +17,7 @@ namespace choda {
 		std::vector<float> vertices;
 		std::vector<unsigned int> indices;
 		int stackCount, sectorCount;
+		float radius;
 		GLuint vao, vbo, ebo;
 	};
 }

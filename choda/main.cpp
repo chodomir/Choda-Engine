@@ -18,7 +18,7 @@
 
 class MyApp : public choda::Engine {
 public:
-	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true), sphere(20,20) { }
+	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
 public:
 	void processInput() {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -59,32 +59,50 @@ public:
 		glm::mat4 projection(1.0f);
 		view = camera.getViewMatrix();
 		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
-		program.setMat4("model", model);
 		program.setMat4("view", view);
 		program.setMat4("projection", projection);
 
-		sphere.draw();
+		for (int i = 0; i < 10; i++) {
+			model = glm::translate(model, positions[i]);
+			program.setMat4("model", model);
+			spheres[i]->draw();
+			
+			model = glm::mat4(1.0f);
+		}
 	}
 
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
-
-		sphere.init();
+		
+		float pi = 3.141592f;
+		float radius = 5.0f;
+		for (int i = 0; i < 10; i++) {
+			float theta = i * 2 * pi / 10;
+			spheres.push_back(new choda::Sphere(0.1f * (i + 1), 16, 36));
+			spheres.back()->init();
+			
+			positions.push_back(glm::vec3(radius * std::sinf(theta), 1.0f, radius * std::cosf(theta)));
+		}
 
 		program.vertex("shader.vert").fragment("shader.frag");
 		program.link();
 		program.use();
+
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.7f, 1.0f);
 	}
 
 	virtual void onWindowClose() override {
 		std::cout << "Window closed...\n";
+
+		for (int i = 0; i < 10; i++)
+			delete spheres[i];
 	}
 private:
 	choda::ShaderProgram program;
 	choda::Camera camera;
-	choda::Sphere sphere;
+	std::vector<choda::Sphere*> spheres;
+	std::vector<glm::vec3> positions;
 
 	float lastX, lastY;
 	bool firstMouse; // initially set to true
