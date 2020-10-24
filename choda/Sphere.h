@@ -3,22 +3,19 @@
 #include <glad/glad.h>
 #include <vector>
 
+#include "Mesh.h"
+
 namespace choda {
 	
-	class Sphere {
+	class Sphere : public Mesh {
 	public:
 		Sphere(float radius, int stackCount, int sectorCount);
 		Sphere();
-		~Sphere();
-
-		void init();
-		void draw();
 	private:
-		std::vector<float> vertices;
-		std::vector<unsigned int> indices;
+		void calculate();
+	private:
 		int stackCount, sectorCount;
 		float radius;
-		GLuint vao, vbo, ebo;
 	};
 }
 

@@ -15,6 +15,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "Sphere.h"
+#include "Cube.h"
 
 class MyApp : public choda::Engine {
 public:
@@ -65,7 +66,7 @@ public:
 		for (int i = 0; i < 10; i++) {
 			model = glm::translate(model, positions[i]);
 			program.setMat4("model", model);
-			spheres[i]->draw();
+			shapes[i]->draw();
 			
 			model = glm::mat4(1.0f);
 		}
@@ -78,8 +79,12 @@ public:
 		float radius = 5.0f;
 		for (int i = 0; i < 10; i++) {
 			float theta = i * 2 * pi / 10;
-			spheres.push_back(new choda::Sphere(0.1f * (i + 1), 16, 36));
-			spheres.back()->init();
+			if (i % 2 == 0)
+				shapes.push_back(new choda::Cube(2.0f));
+			else
+				shapes.push_back(new choda::Sphere(1.0f, 18, 36));
+
+			shapes.back()->init();
 			
 			positions.push_back(glm::vec3(radius * std::sinf(theta), 1.0f, radius * std::cosf(theta)));
 		}
@@ -96,12 +101,12 @@ public:
 		std::cout << "Window closed...\n";
 
 		for (int i = 0; i < 10; i++)
-			delete spheres[i];
+			delete shapes[i];
 	}
 private:
 	choda::ShaderProgram program;
 	choda::Camera camera;
-	std::vector<choda::Sphere*> spheres;
+	std::vector<choda::Mesh*> shapes;
 	std::vector<glm::vec3> positions;
 
 	float lastX, lastY;
