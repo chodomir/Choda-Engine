@@ -9,10 +9,7 @@ namespace choda {
 	
 	class Sphere : public Mesh {
 	public:
-		Sphere(float radius, int stackCount, int sectorCount);
-		Sphere();
-	private:
-		void calculate();
+		Sphere(float radius = 1.0f, int stackCount = 18, int sectorCount = 36);
 	private:
 		int stackCount, sectorCount;
 		float radius;

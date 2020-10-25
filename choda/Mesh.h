@@ -14,6 +14,7 @@ namespace choda {
 	protected:
 		std::vector<float> vertices;
 		std::vector<unsigned int> indices;
+		std::vector<float> normals;
 		GLuint vao, vbo, ebo;
 	};
 

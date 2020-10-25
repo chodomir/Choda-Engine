@@ -58,56 +58,58 @@ public:
 		glm::mat4 model(1.0f);
 		glm::mat4 view(1.0f);
 		glm::mat4 projection(1.0f);
+		std::vector<float> lampColor = { 1.0f, 1.0f, 1.0f };
+		std::vector<float> objectColor = { 1.0f, 0.5f, 0.31f };
 		view = camera.getViewMatrix();
 		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
-		program.setMat4("view", view);
-		program.setMat4("projection", projection);
+		objectShader.use();
+		objectShader.setMat4("model", model);
+		objectShader.setMat4("view", view);
+		objectShader.setMat4("projection", projection);
+		objectShader.setVec3f("objectColor", objectColor);
+		objectShader.setVec3f("lampColor", lampColor);
+		objectShader.setVec3f("lightPos", { 1.5f, 0.0f, 0.0f });
+		object->draw();
 
-		for (int i = 0; i < 10; i++) {
-			model = glm::translate(model, positions[i]);
-			program.setMat4("model", model);
-			shapes[i]->draw();
-			
-			model = glm::mat4(1.0f);
-		}
+		model = glm::translate(model, glm::vec3(1.5f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.2f));
+		lampShader.use();
+		lampShader.setMat4("model", model);
+		lampShader.setMat4("view", view);
+		lampShader.setMat4("projection", projection);
+		lampShader.setVec3f("lampColor", lampColor);
+		lamp->draw();
+
 	}
 
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
+
+		objectShader.vertex("shader.vert").fragment("shader.frag");
+		objectShader.link();
+		lampShader.vertex("shader.vert").fragment("lamp.frag");
+		lampShader.link();
 		
-		float pi = 3.141592f;
-		float radius = 5.0f;
-		for (int i = 0; i < 10; i++) {
-			float theta = i * 2 * pi / 10;
-			if (i % 2 == 0)
-				shapes.push_back(new choda::Cube(2.0f));
-			else
-				shapes.push_back(new choda::Sphere(1.0f, 18, 36));
-
-			shapes.back()->init();
-			
-			positions.push_back(glm::vec3(radius * std::sinf(theta), 1.0f, radius * std::cosf(theta)));
-		}
-
-		program.vertex("shader.vert").fragment("shader.frag");
-		program.link();
-		program.use();
+		lamp = new choda::Cube();
+		object = new choda::Sphere();
+		lamp->init();
+		object->init();
 
 		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.1f, 0.1f, 0.7f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	virtual void onWindowClose() override {
 		std::cout << "Window closed...\n";
 
-		for (int i = 0; i < 10; i++)
-			delete shapes[i];
+		delete lamp;
+		delete object;
 	}
 private:
-	choda::ShaderProgram program;
+	choda::ShaderProgram objectShader, lampShader;
 	choda::Camera camera;
-	std::vector<choda::Mesh*> shapes;
-	std::vector<glm::vec3> positions;
+	choda::Cube *lamp;
+	choda::Mesh *object;
 
 	float lastX, lastY;
 	bool firstMouse; // initially set to true
