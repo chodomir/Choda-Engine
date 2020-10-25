@@ -19,7 +19,7 @@
 
 class MyApp : public choda::Engine {
 public:
-	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
+	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true), lampPos(3.5f, 0.0f, 0.0f) { }
 public:
 	void processInput() {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -30,7 +30,7 @@ public:
 			camera.move(choda::Camera::Direction::Backward, dt);
 		} if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 			camera.move(choda::Camera::Direction::Right, dt);
-		}
+		} 
 	}
 
 public:
@@ -60,19 +60,29 @@ public:
 		glm::mat4 projection(1.0f);
 		std::vector<float> lampColor = { 1.0f, 1.0f, 1.0f };
 		std::vector<float> objectColor = { 1.0f, 0.5f, 0.31f };
+
+		// rotate lamp
+		float theta = glfwGetTime();
+		lampPos = 2.5f * glm::vec3(std::cosf(1.2f * theta), 0.0f, std::sinf(1.2f * theta));
+
 		view = camera.getViewMatrix();
 		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
+
+		model = glm::scale(model, glm::vec3(0.5f));
+		//model = glm::rotate(model, theta, glm::vec3(1.0f, 0.0f, 1.0f));
 		objectShader.use();
 		objectShader.setMat4("model", model);
 		objectShader.setMat4("view", view);
 		objectShader.setMat4("projection", projection);
 		objectShader.setVec3f("objectColor", objectColor);
 		objectShader.setVec3f("lampColor", lampColor);
-		objectShader.setVec3f("lightPos", { 1.5f, 0.0f, 0.0f });
+		objectShader.setVec3f("lightPos", { lampPos.x, lampPos.y, lampPos.z });
+		objectShader.setVec3f("viewPos", { camera.getPosition().x, camera.getPosition().y, camera.getPosition().z });
 		object->draw();
-
-		model = glm::translate(model, glm::vec3(1.5f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.2f));
+		
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, lampPos);
+		model = glm::scale(model, glm::vec3(0.1f));
 		lampShader.use();
 		lampShader.setMat4("model", model);
 		lampShader.setMat4("view", view);
@@ -87,10 +97,10 @@ public:
 
 		objectShader.vertex("shader.vert").fragment("shader.frag");
 		objectShader.link();
-		lampShader.vertex("shader.vert").fragment("lamp.frag");
+		lampShader.vertex("lamp.vert").fragment("lamp.frag");
 		lampShader.link();
 		
-		lamp = new choda::Cube();
+		lamp = new choda::Sphere();
 		object = new choda::Sphere();
 		lamp->init();
 		object->init();
@@ -108,8 +118,9 @@ public:
 private:
 	choda::ShaderProgram objectShader, lampShader;
 	choda::Camera camera;
-	choda::Cube *lamp;
+	choda::Sphere *lamp;
 	choda::Mesh *object;
+	glm::vec3 lampPos;
 
 	float lastX, lastY;
 	bool firstMouse; // initially set to true

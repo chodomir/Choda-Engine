@@ -17,6 +17,7 @@ namespace choda {
 		// getter(s) & setter(s)
 		float getSensitivity() const;
 		glm::mat4 getViewMatrix() const;
+		glm::vec3 getPosition() const;
 
 		void setSensitivity(float sensitivity);
 	private:

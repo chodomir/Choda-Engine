@@ -54,6 +54,11 @@ glm::mat4 Camera::getViewMatrix() const
 	return glm::lookAt(position, position + front, up);
 }
 
+glm::vec3 choda::Camera::getPosition() const
+{
+	return position;
+}
+
 void choda::Camera::setSensitivity(float sensitivity)
 {
 	this->sensitivity = sensitivity;

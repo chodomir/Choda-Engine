@@ -9,11 +9,12 @@ uniform mat4 projection;
 
 out vec3 position;
 out vec3 normal;
-out vec3 worldPos;
+out vec3 fragPos;
 
 void main() {
 	gl_Position = projection * view * model * vec4(_position, 1.0f);
 	position = _position;
-	normal = _normal;
-	worldPos = vec3(model * vec4(position, 1.0f));
+	normal = mat3(transpose(inverse(model))) * _normal;
+	// normal = _normal;
+	fragPos = vec3(model * vec4(position, 0.0f));
 }
