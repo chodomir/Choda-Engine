@@ -89,11 +89,32 @@ void ShaderProgram::setVec3f(const GLchar* varName, const std::vector<GLfloat>& 
 }
 
 
+void ShaderProgram::setVec3f(const GLchar* varName, const glm::vec3& vals) {
+	GLuint loc = glGetUniformLocation(programID, varName);
+	glUniform3f(loc, vals.x, vals.y, vals.z);
+}
+
+void ShaderProgram::setVec3f(const GLchar* varName, const GLfloat x, const GLfloat y, const GLfloat z) {
+	GLuint loc = glGetUniformLocation(programID, varName);
+	glUniform3f(loc, x, y, z);
+}
+
+
 void ShaderProgram::setVec2f(const GLchar* varName, const std::vector<GLfloat>& vals) {
 	GLuint loc = glGetUniformLocation(programID, varName);
 	glUniform2f(loc, vals[0], vals[1]);
 }
 
+void ShaderProgram::setVec2f(const GLchar* varName, const glm::vec2& vals) {
+	GLuint loc = glGetUniformLocation(programID, varName);
+	glUniform2f(loc, vals.x, vals.y);
+}
+
+
+void ShaderProgram::setVec2f(const GLchar* varName, const GLfloat x, const GLfloat y) {
+	GLuint loc = glGetUniformLocation(programID, varName);
+	glUniform2f(loc, x, y);
+}
 
 void ShaderProgram::setFloat(const GLchar* varName, const GLfloat value) {
 	GLuint loc = glGetUniformLocation(programID, varName);

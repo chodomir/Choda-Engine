@@ -55,11 +55,10 @@ public:
 
 		processInput();
 
-		glm::mat4 model(1.0f);
+
 		glm::mat4 view(1.0f);
 		glm::mat4 projection(1.0f);
 		std::vector<float> lampColor = { 1.0f, 1.0f, 1.0f };
-		std::vector<float> objectColor = { 1.0f, 0.5f, 0.31f };
 
 		// rotate lamp
 		float theta = glfwGetTime();
@@ -68,23 +67,31 @@ public:
 		view = camera.getViewMatrix();
 		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
 
-		model = glm::scale(model, glm::vec3(0.5f));
-		//model = glm::rotate(model, theta, glm::vec3(1.0f, 0.0f, 1.0f));
+		glm::mat4 objectModel(1.0f);
+		objectModel = glm::scale(objectModel, glm::vec3(1.5f));
+		
+		glm::mat4 lampModel(1.0f);
+		lampModel = glm::mat4(1.0f);
+		lampModel = glm::translate(lampModel, lampPos);
+		lampModel = glm::scale(lampModel, glm::vec3(0.1f));
+
 		objectShader.use();
-		objectShader.setMat4("model", model);
+		objectShader.setMat4("model", objectModel);
 		objectShader.setMat4("view", view);
 		objectShader.setMat4("projection", projection);
-		objectShader.setVec3f("objectColor", objectColor);
-		objectShader.setVec3f("lampColor", lampColor);
-		objectShader.setVec3f("lightPos", { lampPos.x, lampPos.y, lampPos.z });
-		objectShader.setVec3f("viewPos", { camera.getPosition().x, camera.getPosition().y, camera.getPosition().z });
+		objectShader.setInt("material.diffuse", container->getId());
+		objectShader.setInt("material.specular", containerSpecular->getId());
+		objectShader.setFloat("material.shininess", 32.0f);
+		objectShader.setVec3f("light.ambient", 0.2f, 0.2f, 0.2f);
+		objectShader.setVec3f("light.diffuse", 0.5f, 0.5f, 0.5f);
+		objectShader.setVec3f("light.specular", 1.0f, 1.0f, 1.0f);
+		objectShader.setVec3f("lightColor", lampColor);
+		objectShader.setVec3f("lightPos", lampPos);
 		object->draw();
 		
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lampPos);
-		model = glm::scale(model, glm::vec3(0.1f));
+
 		lampShader.use();
-		lampShader.setMat4("model", model);
+		lampShader.setMat4("model", lampModel);
 		lampShader.setMat4("view", view);
 		lampShader.setMat4("projection", projection);
 		lampShader.setVec3f("lampColor", lampColor);
@@ -95,15 +102,19 @@ public:
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
 
-		objectShader.vertex("shader.vert").fragment("shader.frag");
+		objectShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.frag");
 		objectShader.link();
-		lampShader.vertex("lamp.vert").fragment("lamp.frag");
+		lampShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.frag");
 		lampShader.link();
 		
+		container = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\container2.png", true);
+		containerSpecular = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\container2_specular.png", true);
 		lamp = new choda::Sphere();
-		object = new choda::Sphere();
+		object = new choda::Cube();
 		lamp->init();
 		object->init();
+		container->activate();
+		containerSpecular->activate();
 
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -112,14 +123,16 @@ public:
 	virtual void onWindowClose() override {
 		std::cout << "Window closed...\n";
 
+		delete container;
 		delete lamp;
 		delete object;
 	}
 private:
 	choda::ShaderProgram objectShader, lampShader;
 	choda::Camera camera;
-	choda::Sphere *lamp;
-	choda::Mesh *object;
+	choda::Sphere* lamp;
+	choda::Mesh* object;
+	choda::Texture* container, * containerSpecular;
 	glm::vec3 lampPos;
 
 	float lastX, lastY;

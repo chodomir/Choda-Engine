@@ -6,12 +6,14 @@ namespace choda {
 	{
 	public:
 		Texture(const char* imgPath, bool hasAlpha);
+		~Texture();
 
+		// getters
 		void activate() const;
 		int getWidth() const;
 		int getHeight() const;
+		unsigned short getId() const;
 
-		~Texture();
 	private:
 		// generator for texture units
 		static unsigned short TextureUnitCnt;

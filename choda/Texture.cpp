@@ -53,6 +53,11 @@ int Texture::getHeight() const
 	return height;
 }
 
+unsigned short choda::Texture::getId() const
+{
+	return textureUnit;
+}
+
 Texture::~Texture()
 {
 	glDeleteTextures(1, &texture);

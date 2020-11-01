@@ -20,7 +20,11 @@ namespace choda {
 		void use();
 
 		void setVec3f(const GLchar* varName, const std::vector<GLfloat>& vals);
+		void setVec3f(const GLchar* varName, const glm::vec3& vals);
+		void setVec3f(const GLchar* varName, const GLfloat x, const GLfloat y, const GLfloat z);
 		void setVec2f(const GLchar* varName, const std::vector<GLfloat>& vals);
+		void setVec2f(const GLchar* varName, const glm::vec2& vals);
+		void setVec2f(const GLchar* varName, const GLfloat x, const GLfloat y);
 		void setFloat(const GLchar* varName, const GLfloat value);
 		void setInt(const GLchar* varName, const GLint value);
 		void setMat4(const GLchar* varName, const glm::mat4& mat);
