@@ -19,8 +19,8 @@ choda::Sphere::Sphere(float radius, int stackCount, int sectorCount) : Mesh(), r
 			normals.push_back(x * inv);
 			normals.push_back(y * inv);
 			normals.push_back(z * inv);
-			// texCoords.push_back((float)j / sectorCount);
-			// texCoords.push_back((float)i / stackCount);
+			texCoords.push_back((float)j / sectorCount);
+			texCoords.push_back((float)i / stackCount);
 		}
 	}
 
