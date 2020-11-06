@@ -55,8 +55,8 @@ public:
 		processInput();
 
 		float dp = 1.0f; // diffuse power
-		float ap = 1.0f; // ambient power
-		float sp = 2.0f; // specular power
+		float ap = 0.0f; // ambient power
+		float sp = 1.0f; // specular power
 
 		// construct matrices
 		glm::mat4 model(1.0f);
@@ -74,22 +74,30 @@ public:
 		objectShader.setInt("material.emmision", emmisionMap->getId());
 		objectShader.setFloat("material.shininess", 32.0f);
 		// directional light parameters
-		objectShader.setVec3f("dirLight.ambient", ap * 0.1f, ap * 0.1f, ap * 0.1f);
-		objectShader.setVec3f("dirLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
-		objectShader.setVec3f("dirLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
+		objectShader.setVec3f("dirLight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
+		objectShader.setVec3f("dirLight.diffuse", dp * 0.0f, dp * 0.0f, dp * 0.0f);
+		objectShader.setVec3f("dirLight.specular", sp * 0.0f, sp * 0.0f, sp * 0.0f);
 		objectShader.setVec3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		// point light parameters
-		objectShader.setVec3f("pointLight.ambient", ap * 0.1f, ap * 0.1f, ap * 0.1f);
-		objectShader.setVec3f("pointLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
-		objectShader.setVec3f("pointLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
-		glm::vec3 vplp = view * glm::vec4(-2.0f, -2.0f, 0.0f, 1.0f); // quick fix
-		objectShader.setVec3f("pointLight.position", vplp.x, vplp.y, vplp.z);
-		objectShader.setFloat("pointLight.constant", 1.0f);
-		objectShader.setFloat("pointLight.linear", 0.09f);
-		objectShader.setFloat("pointLight.quadratic", 0.032f);
+		for (int i = 0; i < lightPositions.size(); i++) {
+			std::string pos = std::to_string(i);
+			glm::vec3 vplp = view * glm::vec4(lightPositions[i], 1.0f); // quick fix
+			
+			float r = lampColors[i].x;
+			float g = lampColors[i].y;
+			float b = lampColors[i].z;
+
+			objectShader.setVec3f(("pointLight[" + pos + "].ambient").c_str(), ap * r, ap * g, ap * b);
+			objectShader.setVec3f(("pointLight[" + pos + "].diffuse").c_str(), dp * r, dp * g, dp * b);
+			objectShader.setVec3f(("pointLight[" + pos + "].specular").c_str(), sp * 1.0f, sp * 1.0f, sp * 1.0f);
+			objectShader.setVec3f(("pointLight[" + pos + "].position").c_str(), vplp.x, vplp.y, vplp.z);
+			objectShader.setFloat(("pointLight[" + pos + "].constant").c_str(), 1.0f);
+			objectShader.setFloat(("pointLight[" + pos + "].linear").c_str(), 0.7f);
+			objectShader.setFloat(("pointLight[" + pos + "].quadratic").c_str(), 1.8f);
+		}
 		// spotlight parameters
 		objectShader.setVec3f("spotlight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
-		objectShader.setVec3f("spotlight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
+		objectShader.setVec3f("spotlight.diffuse", dp * 1.0f, dp * 1.0f, dp * 1.0f);
 		objectShader.setVec3f("spotlight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
 		objectShader.setFloat("spotlight.innerCutOff", glm::cos(glm::radians(12.5)));
 		objectShader.setFloat("spotlight.outerCutOff", glm::cos(glm::radians(20.5)));
@@ -113,14 +121,16 @@ public:
 		lampShader.use();
 		lampShader.setMat4("view", view);
 		lampShader.setMat4("projection", projection);
-		lampShader.setVec3f("lampColor", 1.0f, 1.0f, 1.0f);
-		// position for point light
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-2.0f, -2.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.4f));
+		// position for point lights
+		for (int i = 0; i < lightPositions.size(); i++) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.4f));
 
-		lampShader.setMat4("model", model);
-		lamp->draw();
+			lampShader.setVec3f("lampColor", lampColors[i]);
+			lampShader.setMat4("model", model);
+			lamps[i]->draw();
+		}
 
 	}
 
@@ -141,8 +151,6 @@ public:
 		emmisionMap = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\matrix.jpg", false);
 
 		// instancing objects
-		lamp = new choda::Cube();
-		lamp->init();
 		for (int i = 0; i < 10; i++) {
 			if (i % 2 == 0)
 				objects.push_back(new choda::Cube());
@@ -154,8 +162,21 @@ public:
 			int radius = 5;
 			float x = rand() % (2 * radius) - radius;
 			float y = rand() % (2 * radius) - radius;
-			float z = rand() % (2 * radius) - radius;
+			float z = rand() % (4 * radius) - 2 * radius;
 			positions.push_back(glm::vec3(x, y, z));
+		}
+
+		lampColors.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
+		lampColors.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+		lampColors.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+		lampColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+		lightPositions.push_back(glm::vec3(0.7f, 0.2f, 2.0f));
+		lightPositions.push_back(glm::vec3(2.3f, -3.3f, -4.0f));
+		lightPositions.push_back(glm::vec3(-4.0f, 2.0f, -12.0f));
+		lightPositions.push_back(glm::vec3(0.0f, 0.0f, -3.0f));
+		for (int i = 0; i < lightPositions.size(); i++) {
+			lamps.push_back(new choda::Cube());
+			lamps.back()->init();
 		}
 
 		// binding & activating textures
@@ -174,7 +195,9 @@ public:
 		delete containerSpecular;
 		delete emmisionMap;
 
-		delete lamp;
+		for (int i = 0; i < lamps.size(); i++) {
+			delete lamps[i];
+		}
 
 		for (int i = 0; i < objects.size(); i++) {
 			delete objects[i];
@@ -183,10 +206,12 @@ public:
 private:
 	choda::ShaderProgram objectShader, lampShader;
 	choda::Camera camera;
-	choda::Cube* lamp;
+	std::vector<choda::Cube*> lamps;
+	std::vector<glm::vec3> lampColors;
 	std::vector<choda::Mesh*> objects;
 	choda::Texture* container, * containerSpecular, * emmisionMap;
 	std::vector<glm::vec3> positions;
+	std::vector<glm::vec3> lightPositions;
 
 private:
 	float lastX, lastY;
