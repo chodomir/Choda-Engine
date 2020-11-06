@@ -27,8 +27,17 @@ struct PointLight {
 };
 
 struct Spotlight {
-	float cutOff;
+	// position and direction isn't needed because we are in view space
+	float innerCutOff;
+	float outerCutOff;
 
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+
+	float constant;
+	float linear;
+	float quadratic;
 };
 
 in vec3 normal;
@@ -40,6 +49,7 @@ out vec4 FragColor;
 uniform Material material;
 uniform DirectionalLight dirLight;
 uniform PointLight pointLight;
+uniform Spotlight spotlight;
 uniform float time;
 
 vec3 calculateDirectionalLight() {
@@ -85,13 +95,51 @@ vec3 calculatePointLight() {
 
 
 vec3 calculateSpotlight() {
+	vec3 spotDir = vec3(0.0f, 0.0f, 1.0f);
 	
-	return (1.0f);
+	float theta = dot(spotDir, normalize(-fragPos));
+	if (theta > spotlight.innerCutOff) {
+		vec3 norm = normalize(normal);
+		float diff = max(dot(spotDir, norm), 0.0f);
+		vec3 diffuse = spotlight.diffuse * diff * vec3(texture(material.diffuse, texCoord));
+
+		vec3 viewDir = normalize(-fragPos);
+		vec3 reflectDir = reflect(-spotDir, norm);
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininess);
+		vec3 specular = spotlight.specular * spec * vec3(texture(material.specular, texCoord));
+
+		float dist = length(-fragPos);
+		float luminosity = 1.0f / (spotlight.constant + spotlight.linear*dist + spotlight.quadratic*dist*dist);
+
+		return luminosity * (diffuse + specular);
+
+	} else if (theta > spotlight.outerCutOff) {
+		vec3 norm = normalize(normal);
+		float diff = max(dot(spotDir, norm), 0.0f);
+		vec3 diffuse = spotlight.diffuse * diff * vec3(texture(material.diffuse, texCoord));
+
+		vec3 viewDir = normalize(-fragPos);
+		vec3 reflectDir = reflect(-spotDir, norm);
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininess);
+		vec3 specular = spotlight.specular * spec * vec3(texture(material.specular, texCoord));
+
+		float dist = length(-fragPos);
+		float luminosity = 1.0f / (spotlight.constant + spotlight.linear*dist + spotlight.quadratic*dist*dist);
+
+		// create soft edges around spotlight
+		float intensity = clamp((theta - spotlight.outerCutOff) / (spotlight.innerCutOff - spotlight.outerCutOff), 0.0f, 1.0f);
+
+		return intensity * luminosity * (diffuse + specular);
+		
+	} else {
+		return spotlight.ambient * vec3(texture(material.diffuse, texCoord));
+	}
 }
 
 void main() {
 	//vec3 result = calculateDirectionalLight();
-	vec3 result = calculatePointLight();
+	//vec3 result = calculatePointLight();
+	vec3 result = calculateSpotlight();
 
 	FragColor = vec4(result, 1.0f);
 }

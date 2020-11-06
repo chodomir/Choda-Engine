@@ -87,7 +87,15 @@ public:
 		objectShader.setFloat("pointLight.constant", 1.0f);
 		objectShader.setFloat("pointLight.linear", 0.09f);
 		objectShader.setFloat("pointLight.quadratic", 0.032f);
-
+		// spotlight parameters
+		objectShader.setVec3f("spotlight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
+		objectShader.setVec3f("spotlight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
+		objectShader.setVec3f("spotlight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
+		objectShader.setFloat("spotlight.innerCutOff", glm::cos(glm::radians(12.5)));
+		objectShader.setFloat("spotlight.outerCutOff", glm::cos(glm::radians(20.5)));
+		objectShader.setFloat("spotlight.constant", 1.0f);
+		objectShader.setFloat("spotlight.linear", 0.09f);
+		objectShader.setFloat("spotlight.quadratic", 0.032f);
 
 		objectShader.setFloat("time", glfwGetTime());
 
