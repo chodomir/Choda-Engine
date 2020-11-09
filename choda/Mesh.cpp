@@ -1,5 +1,14 @@
 #include "Mesh.h"
 
+choda::Mesh::Mesh(const std::vector<float>& vertices, const std::vector<float>& normals,
+	const std::vector<float>& texCoords, const std::vector<unsigned int>& indices) : vertices(vertices), normals(normals), texCoords(texCoords), indices(indices)
+{
+}
+
+choda::Mesh::Mesh() 
+{
+}
+
 choda::Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &vbo);
