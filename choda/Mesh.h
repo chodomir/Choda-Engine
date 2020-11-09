@@ -11,6 +11,7 @@ namespace choda {
 	public:
 		Mesh(const std::vector<float> &vertices, const std::vector<float> &normals, const std::vector<float> &texCoords, const std::vector<unsigned int> &indices);
 		Mesh();
+
 		~Mesh();
 
 		void init();
