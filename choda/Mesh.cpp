@@ -1,8 +1,10 @@
 #include "Mesh.h"
 
 choda::Mesh::Mesh(const std::vector<float>& vertices, const std::vector<float>& normals,
-	const std::vector<float>& texCoords, const std::vector<unsigned int>& indices) : vertices(vertices), normals(normals), texCoords(texCoords), indices(indices)
+	const std::vector<float>& texCoords, const std::vector<unsigned int>& indices, const std::vector<Texture> &textures) 
+	: vertices(vertices), normals(normals), texCoords(texCoords), indices(indices), textures(textures)
 {
+	init();
 }
 
 choda::Mesh::Mesh() 
@@ -11,6 +13,9 @@ choda::Mesh::Mesh()
 
 choda::Mesh::~Mesh()
 {
+	for (int i = 0; i < textures.size(); i++)
+		glDeleteTextures(1, &textures[i].id);
+
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
 	glDeleteVertexArrays(1, &vao);
@@ -78,7 +83,28 @@ void choda::Mesh::init()
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
-void choda::Mesh::draw() {
+void choda::Mesh::draw(ShaderProgram& shader) {
+
+	unsigned int diffuseNr = 1;
+	unsigned int specularNr = 1;
+	for (int i = 0; i < textures.size(); i++) {
+		glActiveTexture(GL_TEXTURE0 + i);
+
+		// get the type of texture
+		std::string number;
+		if (textures[i].type == "texture_diffuse")
+			number = std::to_string(diffuseNr++);
+		else if (textures[i].type == "texture_specular")
+			number = std::to_string(specularNr++);
+
+		// set the texture in shader and bind it
+		shader.setFloat(("material." + textures[i].type + number).c_str(), i);
+		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+	}
+	glActiveTexture(GL_TEXTURE0);
+
+
+	// draw mesh
 	glBindVertexArray(vao);
 	if (indices.size() > 0) {
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -86,4 +112,5 @@ void choda::Mesh::draw() {
 	else {
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
 	}
+	glBindVertexArray(0);
 }

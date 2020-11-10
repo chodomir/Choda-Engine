@@ -1,26 +1,23 @@
 #pragma once
 
+#include <string>
+
 namespace choda {
 
 	class Texture
 	{
+
 	public:
-		Texture(const char* imgPath, bool hasAlpha);
-		~Texture();
+		Texture();
+		Texture(const char* imgPath, const char* type);
 
-		// getters
-		void activate() const;
-		int getWidth() const;
-		int getHeight() const;
-		unsigned short getId() const;
+	public:
+		static unsigned int GenerateFromFile(const char* path);
 
-	private:
-		// generator for texture units
-		static unsigned short TextureUnitCnt;
-	private:
-		int width, height;
-		unsigned int texture;
-		unsigned short textureUnit;
+	public:
+		unsigned int id;
+		std::string type;
+		std::string path;
 	};
 
 }

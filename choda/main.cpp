@@ -2,6 +2,9 @@
 	Choda-Engine
 
 	A simple OpenGL app, made for fun.
+
+
+	Backpack model made by Berk Gedik --- https://sketchfab.com/3d-models/survival-guitar-backpack-low-poly-799f8c4511f84fab8c3f12887f7e6b36
 */
 #include <iostream>
 #include <vector>
@@ -16,6 +19,7 @@
 #include "Camera.h"
 #include "Sphere.h"
 #include "Cube.h"
+#include "Model.h"
 
 class MyApp : public choda::Engine {
 public:
@@ -66,35 +70,25 @@ public:
 		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
 		// set uniform values
 		objectShader.use();
+		objectShader.setMat4("model", model);
 		objectShader.setMat4("view", view);
 		objectShader.setMat4("projection", projection);
 		// material parameters
-		objectShader.setInt("material.diffuse", container->getId());
-		objectShader.setInt("material.specular", containerSpecular->getId());
-		objectShader.setInt("material.emmision", emmisionMap->getId());
 		objectShader.setFloat("material.shininess", 32.0f);
 		// directional light parameters
-		objectShader.setVec3f("dirLight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
-		objectShader.setVec3f("dirLight.diffuse", dp * 0.0f, dp * 0.0f, dp * 0.0f);
-		objectShader.setVec3f("dirLight.specular", sp * 0.0f, sp * 0.0f, sp * 0.0f);
+		objectShader.setVec3f("dirLight.ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
+		objectShader.setVec3f("dirLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
+		objectShader.setVec3f("dirLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
 		objectShader.setVec3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		// point light parameters
-		for (int i = 0; i < lightPositions.size(); i++) {
-			std::string pos = std::to_string(i);
-			glm::vec3 vplp = view * glm::vec4(lightPositions[i], 1.0f); // quick fix
-			
-			float r = lampColors[i].x;
-			float g = lampColors[i].y;
-			float b = lampColors[i].z;
-
-			objectShader.setVec3f(("pointLight[" + pos + "].ambient").c_str(), ap * r, ap * g, ap * b);
-			objectShader.setVec3f(("pointLight[" + pos + "].diffuse").c_str(), dp * r, dp * g, dp * b);
-			objectShader.setVec3f(("pointLight[" + pos + "].specular").c_str(), sp * 1.0f, sp * 1.0f, sp * 1.0f);
-			objectShader.setVec3f(("pointLight[" + pos + "].position").c_str(), vplp.x, vplp.y, vplp.z);
-			objectShader.setFloat(("pointLight[" + pos + "].constant").c_str(), 1.0f);
-			objectShader.setFloat(("pointLight[" + pos + "].linear").c_str(), 0.7f);
-			objectShader.setFloat(("pointLight[" + pos + "].quadratic").c_str(), 1.8f);
-		}
+		objectShader.setVec3f("pointLight[0].ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
+		objectShader.setVec3f("pointLight[0].diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
+		objectShader.setVec3f("pointLight[0].specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
+		glm::vec4 vplp = view * glm::vec4(1.0f);
+		objectShader.setVec3f("pointLight[0].position", vplp.x, vplp.y, vplp.z);
+		objectShader.setFloat("pointLight[0].constant", 1.0f);
+		objectShader.setFloat("pointLight[0].linear", 0.7f);
+		objectShader.setFloat("pointLight[0].quadratic", 1.8f);
 		// spotlight parameters
 		objectShader.setVec3f("spotlight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
 		objectShader.setVec3f("spotlight.diffuse", dp * 1.0f, dp * 1.0f, dp * 1.0f);
@@ -104,86 +98,33 @@ public:
 		objectShader.setFloat("spotlight.constant", 1.0f);
 		objectShader.setFloat("spotlight.linear", 0.09f);
 		objectShader.setFloat("spotlight.quadratic", 0.032f);
-
 		objectShader.setFloat("time", glfwGetTime());
-
-		// set position of every object & draw them
-		for (int i = 0; i < objects.size(); i++) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, positions[i]);
-			model = glm::rotate(model, 20.0f * i, glm::vec3(1.0f, 1.0f, 1.0f));
-
-			objectShader.setMat4("model", model);
-			objects[i]->draw();
-		}
+		
+		backpackModel->draw(objectShader);
 
 		// change shader program for lights
 		lampShader.use();
+		lampShader.setMat4("model", model);
 		lampShader.setMat4("view", view);
 		lampShader.setMat4("projection", projection);
-		// position for point lights
-		for (int i = 0; i < lightPositions.size(); i++) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.4f));
-
-			lampShader.setVec3f("lampColor", lampColors[i]);
-			lampShader.setMat4("model", model);
-			lamps[i]->draw();
-		}
-
+		lamp->draw(lampShader);
 	}
 
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
-
-		srand(1);
 
 		// creating shader programs
 		objectShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.frag");
 		objectShader.link();
 		lampShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.frag");
 		lampShader.link();
+
+		lamp = new choda::Sphere();
+		lamp->init();
+
+		std::cout << "Loading model...\n";
+		backpackModel = new choda::Model("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\backpack\\backpack.obj");
 		
-		// loading textures
-		container = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\container2.png", true);
-		containerSpecular = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\container2_specular.png", true);
-		emmisionMap = new choda::Texture("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\matrix.jpg", false);
-
-		// instancing objects
-		for (int i = 0; i < 10; i++) {
-			if (i % 2 == 0)
-				objects.push_back(new choda::Cube());
-			else
-				objects.push_back(new choda::Sphere());
-
-			objects.back()->init();
-
-			int radius = 5;
-			float x = rand() % (2 * radius) - radius;
-			float y = rand() % (2 * radius) - radius;
-			float z = rand() % (4 * radius) - 2 * radius;
-			positions.push_back(glm::vec3(x, y, z));
-		}
-
-		lampColors.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-		lampColors.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
-		lampColors.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
-		lampColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-		lightPositions.push_back(glm::vec3(0.7f, 0.2f, 2.0f));
-		lightPositions.push_back(glm::vec3(2.3f, -3.3f, -4.0f));
-		lightPositions.push_back(glm::vec3(-4.0f, 2.0f, -12.0f));
-		lightPositions.push_back(glm::vec3(0.0f, 0.0f, -3.0f));
-		for (int i = 0; i < lightPositions.size(); i++) {
-			lamps.push_back(new choda::Cube());
-			lamps.back()->init();
-		}
-
-		// binding & activating textures
-		container->activate();
-		containerSpecular->activate();
-		emmisionMap->activate();
-
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -191,27 +132,14 @@ public:
 	virtual void onWindowClose() override {
 		std::cout << "Window closed...\n";
 
-		delete container;
-		delete containerSpecular;
-		delete emmisionMap;
-
-		for (int i = 0; i < lamps.size(); i++) {
-			delete lamps[i];
-		}
-
-		for (int i = 0; i < objects.size(); i++) {
-			delete objects[i];
-		}
+		delete backpackModel;
+		delete lamp;
 	}
 private:
 	choda::ShaderProgram objectShader, lampShader;
 	choda::Camera camera;
-	std::vector<choda::Cube*> lamps;
-	std::vector<glm::vec3> lampColors;
-	std::vector<choda::Mesh*> objects;
-	choda::Texture* container, * containerSpecular, * emmisionMap;
-	std::vector<glm::vec3> positions;
-	std::vector<glm::vec3> lightPositions;
+	choda::Model *backpackModel;
+	choda::Sphere *lamp;
 
 private:
 	float lastX, lastY;
