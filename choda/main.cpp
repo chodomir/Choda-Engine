@@ -20,6 +20,7 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Model.h"
+#include "FileSystem.h"
 
 class MyApp : public choda::Engine {
 public:
@@ -114,16 +115,16 @@ public:
 		std::cout << "Window loaded...\n";
 
 		// creating shader programs
-		objectShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\shader.frag");
+		objectShader.vertex("shader/shader.vert").fragment("shader/shader.frag");
 		objectShader.link();
-		lampShader.vertex("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.vert").fragment("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\lamp.frag");
+		lampShader.vertex("shader/lamp.vert").fragment("shader/lamp.frag");
 		lampShader.link();
 
 		lamp = new choda::Sphere();
 		lamp->init();
 
 		std::cout << "Loading model...\n";
-		backpackModel = new choda::Model("C:\\Users\\Chodomir\\source\\repos\\choda\\choda\\backpack\\backpack.obj");
+		backpackModel = new choda::Model(choda::FileSystem::GetAbsolutePath("resources\\model\\backpack\\backpack.obj").c_str());
 		
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

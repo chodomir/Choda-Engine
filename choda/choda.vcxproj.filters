@@ -48,6 +48,9 @@
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Texture.h">
@@ -77,24 +80,21 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="gouraud.frag">
+    <None Include="shader\shader.frag">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="gouraud.vert">
+    <None Include="shader\lamp.frag">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="lamp.vert">
+    <None Include="shader\lamp.vert">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="lamp.frag">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="shader.vert">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="shader.frag">
+    <None Include="shader\shader.vert">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
