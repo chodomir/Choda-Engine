@@ -36,7 +36,7 @@ unsigned int choda::Texture::GenerateFromFile(const char* path)
 		else if (nChannels == 3) format = GL_RGB;
 		else if (nChannels == 4) format = GL_RGBA;
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, img);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, img);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else 
