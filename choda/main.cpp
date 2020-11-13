@@ -82,14 +82,14 @@ public:
 		objectShader.setVec3f("dirLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
 		objectShader.setVec3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		// point light parameters
-		objectShader.setVec3f("pointLight[0].ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
-		objectShader.setVec3f("pointLight[0].diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
-		objectShader.setVec3f("pointLight[0].specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
-		glm::vec4 vplp = view * glm::vec4(1.0f);
-		objectShader.setVec3f("pointLight[0].position", vplp.x, vplp.y, vplp.z);
-		objectShader.setFloat("pointLight[0].constant", 1.0f);
-		objectShader.setFloat("pointLight[0].linear", 0.7f);
-		objectShader.setFloat("pointLight[0].quadratic", 1.8f);
+		objectShader.setVec3f("pointLight.ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
+		objectShader.setVec3f("pointLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
+		objectShader.setVec3f("pointLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
+		glm::vec4 vplp = view * glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+		objectShader.setVec3f("pointLight.position", vplp.x, vplp.y, vplp.z);
+		objectShader.setFloat("pointLight.constant", 1.0f);
+		objectShader.setFloat("pointLight.linear", 0.007f);
+		objectShader.setFloat("pointLight.quadratic", 0.0002f);
 		// spotlight parameters
 		objectShader.setVec3f("spotlight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
 		objectShader.setVec3f("spotlight.diffuse", dp * 1.0f, dp * 1.0f, dp * 1.0f);
@@ -97,13 +97,14 @@ public:
 		objectShader.setFloat("spotlight.innerCutOff", glm::cos(glm::radians(12.5)));
 		objectShader.setFloat("spotlight.outerCutOff", glm::cos(glm::radians(20.5)));
 		objectShader.setFloat("spotlight.constant", 1.0f);
-		objectShader.setFloat("spotlight.linear", 0.09f);
-		objectShader.setFloat("spotlight.quadratic", 0.032f);
+		objectShader.setFloat("spotlight.linear", 0.007f);
+		objectShader.setFloat("spotlight.quadratic", 0.0002f);
 		objectShader.setFloat("time", glfwGetTime());
-		
 		backpackModel->draw(objectShader);
 
 		// change shader program for lights
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+		model = glm::scale(model, glm::vec3(0.2f));
 		lampShader.use();
 		lampShader.setMat4("model", model);
 		lampShader.setMat4("view", view);

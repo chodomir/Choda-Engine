@@ -98,7 +98,7 @@ void choda::Mesh::draw(ShaderProgram& shader) {
 			number = std::to_string(specularNr++);
 
 		// set the texture in shader and bind it
-		shader.setFloat(("material." + textures[i].type + number).c_str(), i);
+		shader.setInt(("material." + textures[i].type + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 	glActiveTexture(GL_TEXTURE0);

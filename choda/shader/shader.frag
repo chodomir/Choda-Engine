@@ -1,14 +1,8 @@
 #version 330 core
 
-#define NR_POINT_LIGHTS 4
-
-
 struct Material {
 	sampler2D texture_diffuse1;
-	sampler2D texture_diffuse2;
-	sampler2D texture_diffuse3;
 	sampler2D texture_specular1;
-	sampler2D texture_specular2;
 	float shininess;
 };
 
@@ -54,7 +48,7 @@ out vec4 FragColor;
 
 uniform Material material;
 uniform DirectionalLight dirLight;
-uniform PointLight pointLight[NR_POINT_LIGHTS];
+uniform PointLight pointLight;
 uniform Spotlight spotlight;
 uniform float time;
 
@@ -127,12 +121,11 @@ vec3 calculateSpotlight(Spotlight light, vec3 normal, vec3 viewDir) {
 void main() {
 	vec3 viewDir = normalize(-fragPos);
 	vec3 norm = normalize(normal);
+	vec3 result;
 	// directional light
-	vec3 result = calculateDirectionalLight(dirLight, norm, viewDir);
+	result += calculateDirectionalLight(dirLight, norm, viewDir);
 	// point lights
-	for (int i = 0; i < NR_POINT_LIGHTS; i++) {
-		result += calculatePointLight(pointLight[i], norm, viewDir);
-	}
+	result += calculatePointLight(pointLight, norm, viewDir);
 	// spotlight
 	result += calculateSpotlight(spotlight, norm, viewDir);
 

@@ -1,8 +1,14 @@
 #include "Model.h"
 
+#include <iostream>
 choda::Model::Model(const char* path)
 {
-	loadModel(path);
+	try {
+		loadModel(path);
+	}
+	catch (std::string err) {
+		std::cout << err;
+	}
 }
 
 choda::Model::~Model()
