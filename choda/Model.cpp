@@ -30,7 +30,7 @@ void choda::Model::loadModel(const std::string& path)
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		throw std::string("ERROR::ASSIMP::", import.GetErrorString());
+		throw std::runtime_error(std::string("ERROR::ASSIMP::", import.GetErrorString()));
 	}
 
 	directory = path.substr(0, path.find_last_of('\\'));
