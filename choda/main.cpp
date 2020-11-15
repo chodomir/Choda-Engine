@@ -20,6 +20,7 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Model.h"
+#include "Plane.h"
 #include "FileSystem.h"
 
 class MyApp : public choda::Engine {
@@ -125,6 +126,7 @@ public:
 		lamp->init();
 
 		std::cout << "Loading model...\n";
+
 		backpackModel = new choda::Model(choda::FileSystem::GetAbsolutePath("resources\\model\\backpack\\backpack.obj").c_str());
 		
 		glEnable(GL_DEPTH_TEST);

@@ -19,7 +19,7 @@ void ShaderProgram::compileShader(GLuint shader, const char* path) {
 		in.close();
 	}
 	catch (std::ifstream::failure& e) {
-		std::cerr << "[File Error]: " << e.what() << '\n';
+		std::cout << "[File Error]: " << e.what() << '\n';
 	}
 
 	std::string temp = ss.str();
@@ -32,7 +32,7 @@ void ShaderProgram::compileShader(GLuint shader, const char* path) {
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
 	if (!ok) {
 		glGetShaderInfoLog(shader, 512, NULL, infoLog);
-		std::cerr << "[Compile Error]: " << infoLog << '\n';
+		std::cout << "[Compile Error]: " << infoLog << '\n';
 	}
 }
 

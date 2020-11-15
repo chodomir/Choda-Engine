@@ -40,7 +40,7 @@ unsigned int choda::Texture::GenerateFromFile(const char* path)
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else 
-		throw std::runtime_error(std::string("Failed to load image ", path));
+		throw std::runtime_error("Failed to load image " + std::string(path));
 	stbi_image_free(img);
 
 	return texId;
