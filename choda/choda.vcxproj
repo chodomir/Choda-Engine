@@ -179,6 +179,8 @@
     <None Include="shader\lamp.vert" />
     <None Include="shader\shader.frag" />
     <None Include="shader\shader.vert" />
+    <None Include="shader\simpleColor.frag" />
+    <None Include="shader\simpleColor.vert" />
     <None Include="shader\texture.frag" />
     <None Include="shader\texture.vert" />
   </ItemGroup>

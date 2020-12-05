@@ -109,5 +109,11 @@
     <None Include="shader\texture.frag">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\simpleColor.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\simpleColor.vert">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

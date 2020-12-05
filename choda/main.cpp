@@ -25,7 +25,7 @@
 
 class MyApp : public choda::Engine {
 public:
-	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
+	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
 public:
 	void processInput() {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -36,7 +36,11 @@ public:
 			camera.move(choda::Camera::Direction::Backward, dt);
 		} if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 			camera.move(choda::Camera::Direction::Right, dt);
-		} 
+		}
+	}
+
+	void drawFloor() {
+
 	}
 
 public:
@@ -55,95 +59,105 @@ public:
 		camera.rotate(yOffset, xOffset);
 	}
 
-	virtual void render(double dt) override {
+	virtual void onKeyPressed(int key) {
+		if (key == GLFW_KEY_ESCAPE) {
+			std::cout << "Closing...";
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		}
+	}
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	virtual void render(double dt) override {
+		// testing
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+		// proccess keyboard input for camera movement
 		processInput();
 
-		float dp = 1.0f; // diffuse power
-		float ap = 0.0f; // ambient power
-		float sp = 1.0f; // specular power
+		float boxSize = 1.0f;
+		glm::vec3 pos1(2.0f, 0.51f * boxSize, 0.0f);
+		glm::vec3 pos2(-1.2f, 0.51f * boxSize, 2.0f);
+		glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(10.0f));
+		glm::mat4 view = camera.getViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)winWidth / winHeight, 0.1f, 100.0f);
 
-		// construct matrices
-		glm::mat4 model(1.0f);
-		glm::mat4 view(1.0f);
-		glm::mat4 projection(1.0f);
-		view = camera.getViewMatrix();
-		projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
-		// set uniform values
-		objectShader.use();
-		objectShader.setMat4("model", model);
-		objectShader.setMat4("view", view);
-		objectShader.setMat4("projection", projection);
-		// material parameters
-		objectShader.setFloat("material.shininess", 32.0f);
-		// directional light parameters
-		objectShader.setVec3f("dirLight.ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
-		objectShader.setVec3f("dirLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
-		objectShader.setVec3f("dirLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
-		objectShader.setVec3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		// point light parameters
-		objectShader.setVec3f("pointLight.ambient", ap * 0.2f, ap * 0.2f, ap * 0.2f);
-		objectShader.setVec3f("pointLight.diffuse", dp * 0.5f, dp * 0.5f, dp * 0.5f);
-		objectShader.setVec3f("pointLight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
-		glm::vec4 vplp = view * glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
-		objectShader.setVec3f("pointLight.position", vplp.x, vplp.y, vplp.z);
-		objectShader.setFloat("pointLight.constant", 1.0f);
-		objectShader.setFloat("pointLight.linear", 0.007f);
-		objectShader.setFloat("pointLight.quadratic", 0.0002f);
-		// spotlight parameters
-		objectShader.setVec3f("spotlight.ambient", ap * 0.0f, ap * 0.0f, ap * 0.0f);
-		objectShader.setVec3f("spotlight.diffuse", dp * 1.0f, dp * 1.0f, dp * 1.0f);
-		objectShader.setVec3f("spotlight.specular", sp * 1.0f, sp * 1.0f, sp * 1.0f);
-		objectShader.setFloat("spotlight.innerCutOff", glm::cos(glm::radians(12.5)));
-		objectShader.setFloat("spotlight.outerCutOff", glm::cos(glm::radians(20.5)));
-		objectShader.setFloat("spotlight.constant", 1.0f);
-		objectShader.setFloat("spotlight.linear", 0.007f);
-		objectShader.setFloat("spotlight.quadratic", 0.0002f);
-		objectShader.setFloat("time", glfwGetTime());
-		backpackModel->draw(objectShader);
+		shader.use();
+		// disable writing to stencil buffer
+		glStencilMask(0x00);
+		// Draw plane
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		glBindTexture(GL_TEXTURE_2D, tex1);
+		plane.draw(shader);
 
-		// change shader program for lights
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-		model = glm::scale(model, glm::vec3(0.2f));
-		lampShader.use();
-		lampShader.setMat4("model", model);
-		lampShader.setMat4("view", view);
-		lampShader.setMat4("projection", projection);
-		lamp->draw(lampShader);
+		// enable writing to stencil buffer and set stencil test function
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+		// draw cubes
+		model = glm::translate(glm::mat4(1.0f), pos1);
+		shader.setMat4("model", model);
+		glBindTexture(GL_TEXTURE_2D, tex2);
+		cube1.draw(shader);
+		model = glm::translate(glm::mat4(1.0f), pos2);
+		shader.setMat4("model", model);
+		cube2.draw(shader);
+
+		// TODO: UNDERSTAND THIS REALLY REALLY GOOD
+		// change shader program
+		singleColorShader.use();
+		singleColorShader.setMat4("view", view);
+		singleColorShader.setMat4("projection", projection);
+		// draw scaled cubes (outline)
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		// scale up the containers
+		model = glm::scale(model, glm::vec3(1.05f));
+		singleColorShader.setMat4("model", model);
+		cube2.draw(singleColorShader);
+		model = glm::translate(glm::mat4(1.0f), pos1);
+		model = glm::scale(model, glm::vec3(1.05f));
+		singleColorShader.setMat4("model", model);
+		cube1.draw(singleColorShader);
+		glStencilMask(0xFF);
+		//glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
 	}
 
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
 
 		// creating shader programs
-		objectShader.vertex("shader/shader.vert").fragment("shader/shader.frag");
-		objectShader.link();
-		lampShader.vertex("shader/lamp.vert").fragment("shader/lamp.frag");
-		lampShader.link();
+		shader.vertex("shader/texture.vert").fragment("shader/texture.frag").link();
+		singleColorShader.vertex("shader/simpleColor.vert").fragment("shader/simpleColor.frag").link();
 
-		lamp = new choda::Sphere();
-		lamp->init();
+		cube1.init();
+		cube2.init();
+		plane.init();
 
-		std::cout << "Loading model...\n";
+		tex1 = choda::Texture::GenerateFromFile(choda::FileSystem::GetAbsolutePath("resources\\image\\floor.png").c_str());
+		tex2 = choda::Texture::GenerateFromFile(choda::FileSystem::GetAbsolutePath("resources\\image\\container2.png").c_str());
 
-		backpackModel = new choda::Model(choda::FileSystem::GetAbsolutePath("resources\\model\\backpack\\backpack.obj").c_str());
-		
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_STENCIL_TEST);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	virtual void onWindowClose() override {
 		std::cout << "Window closed...\n";
 
-		delete backpackModel;
-		delete lamp;
+		glDeleteTextures(1, &tex1);
+		glDeleteTextures(1, &tex2);
 	}
 private:
-	choda::ShaderProgram objectShader, lampShader;
+	choda::ShaderProgram shader, singleColorShader;
 	choda::Camera camera;
-	choda::Model *backpackModel;
-	choda::Sphere *lamp;
+	choda::Cube cube1, cube2;
+	choda::Plane plane;
+	GLuint tex1, tex2;
 
 private:
 	float lastX, lastY;
