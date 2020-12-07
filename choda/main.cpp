@@ -21,11 +21,12 @@
 #include "Cube.h"
 #include "Model.h"
 #include "Plane.h"
+#include "Quad.h"
 #include "FileSystem.h"
 
 class MyApp : public choda::Engine {
 public:
-	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 1.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
+	MyApp() : choda::Engine(), camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)), firstMouse(true) { }
 public:
 	void processInput() {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -39,8 +40,15 @@ public:
 		}
 	}
 
-	void drawFloor() {
+	void drawObject(choda::Mesh& mesh, choda::ShaderProgram& shader, glm::mat4& model) {
+		glm::mat4 view = camera.getViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)winWidth / winHeight, 0.1f, 100.0f);
 
+		shader.use();
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		mesh.draw(shader);
 	}
 
 public:
@@ -67,82 +75,55 @@ public:
 	}
 
 	virtual void render(double dt) override {
-		// testing
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		// clear buffers
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// proccess keyboard input for camera movement
 		processInput();
 
-		float boxSize = 1.0f;
-		glm::vec3 pos1(2.0f, 0.51f * boxSize, 0.0f);
-		glm::vec3 pos2(-1.2f, 0.51f * boxSize, 2.0f);
-		glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(10.0f));
-		glm::mat4 view = camera.getViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)winWidth / winHeight, 0.1f, 100.0f);
-
-		shader.use();
-		// disable writing to stencil buffer
-		glStencilMask(0x00);
-		// Draw plane
-		shader.setMat4("model", model);
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
+		// set texture
 		glBindTexture(GL_TEXTURE_2D, tex1);
-		plane.draw(shader);
-
-		// enable writing to stencil buffer and set stencil test function
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
-		// draw cubes
-		model = glm::translate(glm::mat4(1.0f), pos1);
-		shader.setMat4("model", model);
-		glBindTexture(GL_TEXTURE_2D, tex2);
-		cube1.draw(shader);
-		model = glm::translate(glm::mat4(1.0f), pos2);
-		shader.setMat4("model", model);
-		cube2.draw(shader);
-
-		// TODO: UNDERSTAND THIS REALLY REALLY GOOD
-		// change shader program
-		singleColorShader.use();
-		singleColorShader.setMat4("view", view);
-		singleColorShader.setMat4("projection", projection);
-		// draw scaled cubes (outline)
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-		// scale up the containers
-		model = glm::scale(model, glm::vec3(1.05f));
-		singleColorShader.setMat4("model", model);
-		cube2.draw(singleColorShader);
-		model = glm::translate(glm::mat4(1.0f), pos1);
-		model = glm::scale(model, glm::vec3(1.05f));
-		singleColorShader.setMat4("model", model);
-		cube1.draw(singleColorShader);
-		glStencilMask(0xFF);
-		//glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glEnable(GL_DEPTH_TEST);
+		for (int i = 0; i < meshes.size(); i++) {
+			if (i == 2) glBindTexture(GL_TEXTURE_2D, tex2);
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), positions[i]);
+			drawObject(meshes[i], shader, model);
+		}
 
 	}
 
 	virtual void onWindowLoad() override {
 		std::cout << "Window loaded...\n";
 
+		// generate the texture
+		std::string texDirPath = choda::FileSystem::GetAbsolutePath("resources\\image\\");
+		std::string containerPath = texDirPath + "container2.png";
+		std::string windowPath = texDirPath + "window.png";
+		tex1 = choda::Texture::GenerateFromFile(containerPath.c_str());
+		tex2 = choda::Texture::GenerateFromFile(windowPath.c_str());
+
 		// creating shader programs
 		shader.vertex("shader/texture.vert").fragment("shader/texture.frag").link();
 		singleColorShader.vertex("shader/simpleColor.vert").fragment("shader/simpleColor.frag").link();
 
-		cube1.init();
-		cube2.init();
-		plane.init();
-
-		tex1 = choda::Texture::GenerateFromFile(choda::FileSystem::GetAbsolutePath("resources\\image\\floor.png").c_str());
-		tex2 = choda::Texture::GenerateFromFile(choda::FileSystem::GetAbsolutePath("resources\\image\\container2.png").c_str());
+		// populate meshes array
+		meshes.push_back(choda::Cube());
+		meshes.push_back(choda::Cube());
+		meshes.push_back(choda::Quad());
+		meshes.push_back(choda::Quad());
+		meshes.push_back(choda::Quad());
+		// initialize cube positions
+		positions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+		positions.push_back(glm::vec3(3.0f, 0.0f, -2.0f));
+		positions.push_back(glm::vec3(0.0f, 0.0f, 1.01f));
+		positions.push_back(glm::vec3(5.0f, 1.0f, 3.0f));
+		positions.push_back(glm::vec3(4.0f, 1.0f, -0.99f));
+		// initialize meshes
+		for (auto& mesh : meshes)
+			mesh.init();
 
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_STENCIL_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
@@ -155,8 +136,8 @@ public:
 private:
 	choda::ShaderProgram shader, singleColorShader;
 	choda::Camera camera;
-	choda::Cube cube1, cube2;
-	choda::Plane plane;
+	std::vector<choda::Mesh> meshes;
+	std::vector<glm::vec3> positions;
 	GLuint tex1, tex2;
 
 private:
