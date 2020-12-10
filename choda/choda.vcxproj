@@ -177,6 +177,8 @@
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shader\fboShader.frag" />
+    <None Include="shader\fboShader.vert" />
     <None Include="shader\lamp.frag" />
     <None Include="shader\lamp.vert" />
     <None Include="shader\shader.frag" />

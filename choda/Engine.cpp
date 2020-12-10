@@ -48,16 +48,19 @@ void Engine::init(bool captureMouse) {
 	glViewport(0, 0, winWidth, winHeight);
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
 		glViewport(0, 0, width, height);
-		});
+		Engine* eng = static_cast<Engine*>(glfwGetWindowUserPointer(window));
+		eng->winWidth = width;
+		eng->winHeight = height;
+	});
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 		// GLFW is a C API and this is a way to make it more OO friendly
 		if (action == GLFW_PRESS) {
 			static_cast<Engine*>(glfwGetWindowUserPointer(window))->onKeyPressed(key);
 		}
-		});
+	});
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
 		static_cast<Engine*>(glfwGetWindowUserPointer(window))->onMouseMove(xpos, ypos);
-		});
+	});
 
 }
 

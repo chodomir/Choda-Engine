@@ -59,9 +59,40 @@ glm::vec3 choda::Camera::getPosition() const
 	return position;
 }
 
+float choda::Camera::getYaw() const 
+{
+	return yaw;
+}
+
+float choda::Camera::getPitch() const
+{
+	return pitch;
+}
+
 void choda::Camera::setSensitivity(float sensitivity)
 {
 	this->sensitivity = sensitivity;
+}
+
+void choda::Camera::setPosition(glm::vec3 position) 
+{
+	this->position = position;
+}
+
+void choda::Camera::setAngles(float pitch, float yaw)
+{
+	this->pitch = pitch;
+	this->yaw = yaw;
+}
+
+void choda::Camera::setYaw(float yaw)
+{
+	this->yaw = yaw;
+}
+
+void choda::Camera::setPitch(float pitch)
+{
+	this->pitch = pitch;
 }
 
 

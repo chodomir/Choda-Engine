@@ -18,8 +18,14 @@ namespace choda {
 		float getSensitivity() const;
 		glm::mat4 getViewMatrix() const;
 		glm::vec3 getPosition() const;
+		float getYaw() const;
+		float getPitch() const;
 
 		void setSensitivity(float sensitivity);
+		void setPosition(glm::vec3 position);
+		void setAngles(float pitch, float yaw);
+		void setYaw(float yaw);
+		void setPitch(float pitch);
 	private:
 		glm::vec3 position;
 		glm::vec3 front;

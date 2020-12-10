@@ -121,5 +121,11 @@
     <None Include="shader\simpleColor.vert">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\fboShader.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\fboShader.frag">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
