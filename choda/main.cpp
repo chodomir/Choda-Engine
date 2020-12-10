@@ -81,16 +81,7 @@ public:
 		// MVP matrices
 		glm::mat4 model(1.0f);
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)winWidth / winHeight, 0.1f, 100.0f);
-		// get camera current state
-		float camPitch = camera.getPitch();
-		float camYaw = camera.getYaw();
-		// change camera rotation
-		camera.setAngles(0, camYaw - 180);
-		camera.rotate(0, 0); // apply changes
 		glm::mat4 view = camera.getViewMatrix(); // get view matrix of the translated camera
-		// reset camera rotation
-		camera.setAngles(camPitch, camYaw);
-		camera.rotate(0, 0); // apply changes
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
@@ -111,8 +102,6 @@ public:
 		// render the scene to window (default framebuffer)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		view = camera.getViewMatrix();
-		shader.setMat4("view", view);
 		for (int i = 0; i < meshes.size(); i++) {
 			model = glm::translate(glm::mat4(1.0f), positions[i]);
 			shader.setMat4("model", model);
@@ -122,7 +111,7 @@ public:
 		// draw the mirror
 		glBindTexture(GL_TEXTURE_2D, tex2);
 		fboShader.use();
-		mirrorQuad.draw(fboShader);
+		fxQuad.draw(fboShader);
 	}
 
 	virtual void onWindowLoad() override {
@@ -152,8 +141,7 @@ public:
 			mesh.init();
 		
 		// FRAMEBUFFER CODE
-		mirrorQuad.init();
-		mirrorPos = glm::vec3(0.0f, 0.0f, 1.01f);
+		fxQuad.init();
 
 		// create framebuffer object
 		glGenFramebuffers(1, &fbo);
@@ -196,8 +184,7 @@ public:
 private:
 	choda::ShaderProgram shader, fboShader;
 	choda::Camera camera;
-	choda::Quad mirrorQuad;
-	glm::vec3 mirrorPos;
+	choda::Quad fxQuad;
 	std::vector<choda::Mesh> meshes;
 	std::vector<glm::vec3> positions;
 	GLuint tex1, tex2;
